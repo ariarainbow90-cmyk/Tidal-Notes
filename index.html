@@ -593,7 +593,7 @@ function renderDay(){
   const h=document.createElement('div');h.className='dayhdr';
   h.innerHTML=`<div><div class="daytitle">${fd(selDay)}</div><div class="daysub">${de.length?de.length+' 篇':'今日留白'}</div></div>`;
   const nb=document.createElement('button');nb.className='btn-new';nb.textContent='+ 新增';nb.onclick=newE;h.appendChild(nb);a.appendChild(h);
-  if(!de.length){a.innerHTML+=`<div class="empty"><div class="empty-ic">🌊</div><div class="empty-tx">今日留白，等待书写</div>`;}
+  if(!de.length){a.innerHTML+=`<div class="empty"><div class="empty-ic">🌊</div><div class="empty-tx">今日留白，等待书写</div></div>`;}
   else de.forEach(e=>a.appendChild(mkCard(e)));
 }
 function mkCard(e){

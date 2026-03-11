@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#6b4a2a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Tidal">
+<title>Tidal Notes</title>
+
+<!-- PWA Manifest inline via blob — registered below -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Playfair+Display:ital,wght@0,400;1,400&family=Special+Elite&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=IM+Fell+English:ital@0;1&family=Lora:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@300;400;600&family=LXGW+WenKai&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Lora','Noto Serif SC',serif;background:#f0e8d8;height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+:root{--br:#6b4a2a;--li:#fdf8f0;--bd:#c0a070;--tx:#5a3a1a;--mu:#9a7050;--hd:#e8d8c0;--ca:#ede0ca;}
+
+/* ── VIEWS ── */
+.view{display:none;flex-direction:column;height:100%;}
+.view.active{display:flex;}
+
+/* ── SHARED TOP BAR ── */
+.topbar{display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--hd);border-bottom:1px solid var(--bd);flex-shrink:0;}
+.topbar-col{display:flex;flex-direction:column;flex:1;overflow:hidden;}
+.topbar-main{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--tx);white-space:nowrap;}
+.topbar-sub{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--mu);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.btn-back{background:none;border:none;cursor:pointer;color:var(--mu);font-size:22px;line-height:1;padding:0;flex-shrink:0;}
+.btn-star{background:none;border:none;cursor:pointer;font-size:20px;padding:0;flex-shrink:0;}
+.btn-save{background:var(--br);color:var(--li);border:none;border-radius:3px;padding:7px 15px;cursor:pointer;font-family:'Lora',serif;font-size:13px;flex-shrink:0;}
+.btn-del{background:none;border:1px solid rgba(180,80,60,0.4);border-radius:3px;padding:6px 10px;cursor:pointer;color:rgba(180,80,60,0.7);font-size:13px;flex-shrink:0;}
+
+/* ── CALENDAR HEADER ── */
+.hdr{background:var(--hd);border-bottom:1px solid var(--bd);padding:12px 14px 10px;flex-shrink:0;}
+.hdr-row{display:flex;align-items:center;justify-content:space-between;}
+.hdr-l{display:flex;align-items:center;gap:9px;flex-shrink:0;min-width:0;}
+.btn-menu{background:none;border:none;cursor:pointer;color:var(--mu);font-size:20px;padding:0;line-height:1;flex-shrink:0;}
+.app-name-block{display:flex;flex-direction:column;line-height:1.2;}
+.app-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:var(--tx);letter-spacing:.02em;white-space:nowrap;}
+.app-sub-line{display:flex;align-items:center;gap:6px;}
+.app-sub{font-size:10px;color:var(--mu);letter-spacing:.06em;white-space:nowrap;}
+.app-cnt{font-size:10px;color:var(--mu);white-space:nowrap;}
+.hdr-btns{display:flex;gap:5px;flex-shrink:0;}
+.btn-sm{background:none;border:1px solid var(--bd);border-radius:3px;padding:5px 8px;cursor:pointer;color:var(--mu);font-size:11px;font-family:'Lora',serif;white-space:nowrap;}
+
+/* ── CALENDAR ── */
+.calw{background:var(--ca);border-bottom:1px solid var(--bd);padding:8px 12px;flex-shrink:0;}
+.calnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.cnbtn{background:none;border:none;cursor:pointer;color:var(--mu);font-size:22px;line-height:1;padding:0 4px;}
+.calmth{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--tx);font-style:italic;}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.calwd{text-align:center;font-size:10px;color:var(--mu);padding:2px 0;}
+.calday{background:transparent;border:1px solid transparent;border-radius:50%;width:30px;height:30px;margin:auto;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tx);font-size:12px;position:relative;font-family:'Lora',serif;}
+.calday.today{border-color:var(--mu)!important;}
+.calday.sel{background:var(--br);color:var(--li);}
+.caldot{position:absolute;bottom:2px;width:3px;height:3px;border-radius:50%;background:var(--mu);}
+.calday.sel .caldot{background:rgba(253,248,240,0.6);}
+
+/* Calendar decorative tagline */
+.cal-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--mu);text-align:center;padding:7px 0 4px;user-select:none;pointer-events:none;}
+
+/* ── ENTRY LIST ── */
+.earea{flex:1;overflow-y:auto;padding:13px 14px;}
+.dayhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+.daytitle{font-family:'Cormorant Garamond','Noto Serif SC',serif;font-size:16px;font-style:italic;color:var(--tx);}
+.daysub{font-size:11px;color:var(--mu);}
+.btn-new{background:var(--br);color:var(--li);border:none;border-radius:3px;padding:7px 13px;cursor:pointer;font-family:'Lora',serif;font-size:13px;}
+.ecard{border:1px solid rgba(150,110,70,0.3);border-radius:4px;padding:11px 14px;cursor:pointer;margin-bottom:9px;transition:box-shadow .15s;}
+.ecard:active{box-shadow:0 2px 12px rgba(80,50,20,0.14);}
+.ecard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.ecard-date{font-size:11px;opacity:0.42;letter-spacing:.07em;}
+.ecard-meta{display:flex;align-items:center;gap:5px;}
+.chip{font-size:10px;padding:1px 7px;border-radius:10px;background:rgba(107,74,42,0.1);color:var(--br);}
+.ecard-body{font-size:13px;line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.empty{display:flex;flex-direction:column;align-items:center;padding-top:40px;gap:10px;opacity:0.5;}
+.empty-ic{font-size:34px;}
+.empty-tx{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#8b6b4a;}
+
+/* ── SIDEBAR ── */
+#sb-ov{position:fixed;inset:0;background:rgba(40,20,5,0.45);z-index:200;display:none;opacity:0;transition:opacity 0.25s;}
+#sb-ov.vis{opacity:1;}
+#sb-pn{position:absolute;top:0;left:0;bottom:0;width:82%;max-width:300px;background:var(--li);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform 0.25s cubic-bezier(.4,0,.2,1);box-shadow:4px 0 20px rgba(80,50,20,0.14);}
+#sb-pn.open{transform:translateX(0);}
+.sb-hdr{background:var(--hd);padding:14px 13px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.sb-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--tx);}
+.sb-search{width:100%;background:var(--li);border:1px solid var(--bd);border-radius:16px;padding:6px 12px;font-family:'Lora','Noto Serif SC',serif;font-size:13px;color:var(--tx);outline:none;margin-top:9px;}
+.sb-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px;}
+.sbtab{background:none;border:1px solid var(--bd);border-radius:12px;padding:3px 9px;cursor:pointer;font-family:'Lora','Noto Serif SC',serif;font-size:11px;color:var(--mu);}
+.sbtab.on{background:var(--br);color:var(--li);border-color:var(--br);}
+.sb-list{flex:1;overflow-y:auto;padding:9px 11px;}
+.sb-e{padding:9px 11px;border-radius:4px;cursor:pointer;margin-bottom:5px;border:1px solid rgba(150,110,70,0.18);background:rgba(253,248,240,0.7);}
+.sb-e-date{font-size:10px;color:var(--mu);margin-bottom:2px;letter-spacing:.05em;}
+.sb-e-body{font-size:12px;line-height:1.6;color:var(--tx);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.sb-e-ft{display:flex;align-items:center;gap:4px;margin-top:3px;}
+
+/* ── VIEW MODE (read-only) ── */
+#vv{background:#2a1a0a;}
+.vv-bg{position:absolute;inset:0;background:rgba(20,10,3,0.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.vv-inner{position:relative;display:flex;flex-direction:column;height:100%;z-index:1;}
+.vv-top{display:flex;align-items:center;padding:12px 14px;flex-shrink:0;}
+.vv-back{background:none;border:none;cursor:pointer;color:rgba(253,240,220,0.7);font-size:22px;padding:0;line-height:1;}
+.vv-star{background:none;border:none;cursor:pointer;font-size:20px;padding:0;margin-left:auto;}
+.vv-card-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:0 16px;overflow:auto;}
+.vv-footer{padding:14px 16px 20px;display:flex;gap:10px;flex-shrink:0;}
+.vv-btn-edit{flex:1;background:rgba(253,240,220,0.15);border:1px solid rgba(253,240,220,0.35);border-radius:4px;padding:12px;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;color:rgba(253,240,220,0.85);letter-spacing:.04em;}
+.vv-btn-exp{flex:1;background:var(--br);border:none;border-radius:4px;padding:12px;cursor:pointer;font-family:'Lora',serif;font-size:13px;color:var(--li);}
+
+/* Read-only card clone */
+#vv-card{position:relative;border-radius:2px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.5);}
+
+/* ── WRITE VIEW ── */
+.wscroll{flex:1;overflow-y:auto;padding:14px;}
+.sec{margin-bottom:15px;}
+.slbl{display:block;font-family:'Lora',serif;font-size:11px;letter-spacing:.08em;color:#8b6b4a;margin-bottom:5px;font-weight:600;text-transform:uppercase;}
+.inp{width:100%;background:var(--li);border:1px solid var(--bd);border-radius:3px;outline:none;font-family:'Lora','Noto Serif SC',serif;color:var(--tx);padding:7px 10px;font-size:14px;}
+textarea.inp{min-height:200px;resize:vertical;line-height:1.8;}
+.brow{display:flex;flex-wrap:wrap;gap:5px;}
+.tbtn{font-family:'Lora','Noto Serif SC',serif;border:1px solid var(--bd);border-radius:3px;cursor:pointer;padding:5px 9px;background:var(--li);color:var(--tx);font-size:12px;}
+.tbtn.on{background:var(--br);color:var(--li);}
+.wfooter{padding:12px 14px;border-top:1px solid var(--bd);background:var(--hd);flex-shrink:0;display:flex;gap:8px;}
+.btn-go{flex:1;background:var(--br);color:var(--li);border:none;border-radius:3px;padding:12px;cursor:pointer;font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;letter-spacing:.04em;}
+.btn-svdraft{background:none;border:1px solid var(--bd);border-radius:3px;padding:12px 14px;cursor:pointer;font-family:'Lora',serif;font-size:12px;color:var(--mu);}
+.draft-badge{display:none;font-size:10px;color:var(--mu);text-align:center;margin-top:5px;font-style:italic;}
+/* cat row with delete x */
+.cat-item{display:flex;align-items:center;gap:2px;}
+.cat-del{background:none;border:none;cursor:pointer;color:var(--mu);font-size:13px;padding:0 2px;line-height:1;opacity:0.6;}
+.cat-del:active{opacity:1;}
+
+/* ── LAYOUT VIEW ── */
+.lprev{flex-shrink:0;background:var(--ca);border-bottom:1px solid var(--bd);padding:10px 12px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-height:52vh;}
+.lprev-inner{overflow:auto;max-width:100%;display:flex;justify-content:center;-webkit-overflow-scrolling:touch;}
+.lscroll{flex:1;overflow-y:auto;padding:14px;}
+.div{height:1px;background:rgba(192,160,112,0.4);margin:4px 0 14px;}
+input[type=range]{width:100%;accent-color:var(--br);}
+.bgbtn{border:1px solid var(--bd);border-radius:3px;padding:5px 11px;cursor:pointer;font-family:'Lora','Noto Serif SC',serif;font-size:12px;color:var(--tx);}
+.bgbtn.on{border:2px solid var(--br);}
+.trow{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.tlbl{font-family:'Lora','Noto Serif SC',serif;font-size:13px;color:var(--tx);}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.cpbtn{border:1px solid var(--bd);border-radius:4px;padding:7px 0;cursor:pointer;font-size:12px;text-align:center;background:var(--li);color:var(--tx);}
+.cpbtn.on{background:var(--br);color:var(--li);border-color:var(--br);}
+.exrow{display:flex;gap:8px;padding-bottom:8px;}
+.btn-exi{flex:1;background:var(--br);color:var(--li);border:none;border-radius:3px;padding:10px;cursor:pointer;font-family:'Lora',serif;font-size:13px;}
+.btn-ext{flex:1;background:var(--li);color:var(--tx);border:1px solid var(--bd);border-radius:3px;padding:10px;cursor:pointer;font-family:'Lora',serif;font-size:13px;}
+.sw{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;}
+.sli{position:absolute;cursor:pointer;inset:0;background:#c8b090;border-radius:20px;transition:.3s;}
+.sli:before{position:absolute;content:'';height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+input:checked+.sli{background:var(--br);}
+input:checked+.sli:before{transform:translateX(16px);}
+.preset-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+.pbtn{font-family:'Lora',serif;border:1px solid var(--bd);border-radius:3px;cursor:pointer;padding:4px 9px;background:var(--li);color:var(--tx);font-size:12px;}
+.pbtn.on{background:var(--br);color:var(--li);}
+
+/* ── PREVIEW CARD in layout view ── */
+#pc{position:relative;border-radius:2px;overflow:hidden;box-shadow:0 2px 18px rgba(80,50,20,0.22);}
+#pc-vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(80,50,20,0.07) 100%);pointer-events:none;z-index:0;}
+#pc-date{position:relative;z-index:1;font-family:'Cormorant Garamond','Noto Serif SC',serif;font-size:11px;font-style:italic;opacity:0.45;margin-bottom:18px;letter-spacing:.12em;}
+#pc-body{position:relative;z-index:1;white-space:pre-wrap;word-break:break-word;}
+#pc-corner{position:absolute;font-family:'Lora','Noto Serif SC',serif;font-size:10px;letter-spacing:.06em;opacity:0.38;z-index:2;line-height:1.3;display:none;}
+
+/* read-only card inner elements (shared class names) */
+.rc-vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(80,50,20,0.07) 100%);pointer-events:none;z-index:0;}
+.rc-date{position:relative;z-index:1;font-family:'Cormorant Garamond','Noto Serif SC',serif;font-size:11px;font-style:italic;opacity:0.45;margin-bottom:18px;letter-spacing:.12em;}
+.rc-body{position:relative;z-index:1;white-space:pre-wrap;word-break:break-word;}
+.rc-corner{position:absolute;font-family:'Lora','Noto Serif SC',serif;font-size:10px;letter-spacing:.06em;opacity:0.38;z-index:2;line-height:1.3;}
+
+/* ── SIDEBAR TAGLINE ── */
+.sb-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:var(--mu);opacity:0.7;padding:7px 13px 2px;line-height:1.5;pointer-events:none;user-select:none;border-top:1px solid rgba(192,160,112,0.25);margin-top:2px;}
+
+/* ── DELETE MODAL ── */
+#del-modal{display:none;position:fixed;inset:0;z-index:500;align-items:flex-end;justify-content:center;}
+#del-modal.show{display:flex;}
+#del-modal-bg{position:absolute;inset:0;background:rgba(30,15,5,0.5);animation:fadein .2s;}
+#del-modal-box{position:relative;background:var(--li);border-radius:16px 16px 0 0;padding:28px 22px 36px;width:100%;max-width:420px;animation:slideup .22s cubic-bezier(.4,0,.2,1);}
+#del-modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:var(--tx);text-align:center;margin-bottom:8px;}
+#del-modal-sub{font-family:'Lora',serif;font-size:13px;color:var(--mu);text-align:center;margin-bottom:24px;line-height:1.6;}
+.del-modal-btns{display:flex;flex-direction:column;gap:10px;}
+.del-modal-confirm{background:rgba(180,60,50,0.85);color:#fff;border:none;border-radius:8px;padding:14px;font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;cursor:pointer;letter-spacing:.03em;}
+.del-modal-cancel{background:none;border:1px solid var(--bd);border-radius:8px;padding:13px;font-family:'Lora',serif;font-size:14px;color:var(--mu);cursor:pointer;}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes slideup{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* BG texture classes — background-image must be explicit to override inline style */
+.bg-ivory{background-color:#fdf8f0 !important;background-image:none !important;}
+.bg-aged {background-color:#f0e0c0 !important;background-image:none !important;}
+.bg-lined{background-color:#fdf8f0 !important;background-image:repeating-linear-gradient(transparent,transparent 27px,rgba(200,184,154,0.55) 28px) !important;}
+.bg-grid {background-color:#fdf8f0 !important;background-image:linear-gradient(rgba(200,184,154,0.45) 1px,transparent 1px),linear-gradient(90deg,rgba(200,184,154,0.45) 1px,transparent 1px) !important;background-size:28px 28px !important;}
+.bg-kraft{background-color:#c8a060 !important;background-image:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<div id="sb-ov" onclick="sbClose(event)">
+  <div id="sb-pn">
+    <div class="sb-hdr">
+      <div class="sb-title">Tidal Notes</div>
+      <input class="sb-search" id="sb-sq" placeholder="🔍 搜索…" oninput="renderSBSearch()">
+      <div class="sb-tabs" id="sb-tabs"></div>
+    </div>
+    <div class="sb-tagline" id="sb-tagline"></div>
+    <div class="sb-list" id="sb-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════ DELETE MODAL ═══════════ -->
+<div id="del-modal">
+  <div id="del-modal-bg" onclick="hideDelModal()"></div>
+  <div id="del-modal-box">
+    <div id="del-modal-title">删除这条随笔？</div>
+    <div id="del-modal-sub">潮水会带走它，<br>这个动作无法撤销。</div>
+    <div class="del-modal-btns">
+      <button class="del-modal-confirm" onclick="confirmDel()">确认删除</button>
+      <button class="del-modal-cancel" onclick="hideDelModal()">再想想</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: CALENDAR ═══════════ -->
+<div id="vc" class="view active">
+  <div class="hdr">
+    <div class="hdr-row">
+      <div class="hdr-l">
+        <button class="btn-menu" onclick="sbOpen()">☰</button>
+        <div class="app-name-block">
+          <span class="app-title">Tidal Notes</span>
+          <div class="app-sub-line">
+            <span class="app-sub">潮汐笔记</span>
+            <span class="app-cnt" id="ttl">· 0 篇</span>
+          </div>
+        </div>
+      </div>
+      <div class="hdr-btns">
+        <button class="btn-sm" onclick="doExport()">↗ 备份</button>
+        <button class="btn-sm" onclick="document.getElementById('imp').click()">↙ 导入</button>
+        <input id="imp" type="file" accept=".json" style="display:none" onchange="doImport(this)">
+      </div>
+    </div>
+  </div>
+  <div class="calw">
+    <div class="calnav">
+      <button class="cnbtn" onclick="chM(-1)">‹</button>
+      <span class="calmth" id="cmth"></span>
+      <button class="cnbtn" onclick="chM(1)">›</button>
+    </div>
+    <div class="calgrid" id="cg"></div>
+  </div>
+  <div class="cal-tagline">where the tide leaves its words</div>
+  <div class="earea" id="ea"></div>
+</div>
+
+<!-- ═══════════ VIEW: READ-ONLY ═══════════ -->
+<div id="vv" class="view" style="position:relative;">
+  <div class="vv-bg" id="vv-bg"></div>
+  <div class="vv-inner">
+    <div class="vv-top">
+      <button class="vv-back" onclick="showView('vc');renderCal();renderDay();">←</button>
+      <button class="vv-star" id="vv-star" onclick="togStarView()">☆</button>
+    </div>
+    <div class="vv-card-wrap">
+      <div id="vv-card"></div>
+    </div>
+    <div class="vv-footer">
+      <button class="vv-btn-edit" onclick="vvEdit()">编辑</button>
+      <button class="vv-btn-exp" onclick="vvExport()">📷 导出图片</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: WRITE ═══════════ -->
+<div id="vw" class="view">
+  <div class="topbar">
+    <button class="btn-back" onclick="writeBack()">←</button>
+    <div class="topbar-col">
+      <span class="topbar-main">写</span>
+      <span class="topbar-sub">say it before the wave takes it</span>
+    </div>
+    <button class="btn-star" id="bst" onclick="togStar()">☆</button>
+    <button class="btn-del" id="wdel" onclick="delEntry()" style="display:none;">删除</button>
+  </div>
+  <div class="wscroll">
+    <div class="sec">
+      <textarea class="inp" id="ec" placeholder="在此书写随笔，或粘贴喜欢的句子…" oninput="autoSaveDraft()"></textarea>
+      <div class="draft-badge" id="draft-badge">草稿已暂存</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" class="sec">
+      <div>
+        <label class="slbl">日期</label>
+        <input class="inp" type="date" id="ed" oninput="autoSaveDraft()" style="height:38px;">
+      </div>
+      <div>
+        <label class="slbl">分类</label>
+        <div class="brow" id="catb"></div>
+      </div>
+    </div>
+    <div class="sec" id="custom-cat-sec" style="display:none;">
+      <label class="slbl">新分类名称</label>
+      <div style="display:flex;gap:6px;">
+        <input class="inp" type="text" id="new-cat-inp" placeholder="输入分类名…" style="height:36px;">
+        <button class="tbtn" onclick="addCustomCat()" style="white-space:nowrap;">+ 添加</button>
+      </div>
+    </div>
+  </div>
+  <div class="wfooter">
+    <button class="btn-svdraft" onclick="saveDraftAndBack()">存草稿</button>
+    <button class="btn-go" onclick="goLayout()">去排版 →</button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: LAYOUT ═══════════ -->
+<div id="vl" class="view">
+  <div class="topbar">
+    <button class="btn-back" onclick="showView('vw')">←</button>
+    <div class="topbar-col">
+      <span class="topbar-main">排版</span>
+      <span class="topbar-sub">make it beautiful, then let it go</span>
+    </div>
+    <button class="btn-star" id="bst2" onclick="togStar()">☆</button>
+    <button class="btn-save" onclick="saveE()">保存 ✓</button>
+  </div>
+
+  <!-- Preview pinned at top -->
+  <div class="lprev">
+    <div class="lprev-inner">
+      <div id="pc">
+        <div id="pc-vig"></div>
+        <div id="pc-date"></div>
+        <div id="pc-body"></div>
+        <div id="pc-corner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="lscroll">
+    <div class="sec">
+      <label class="slbl">字体</label>
+      <div class="brow" id="fntb"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" class="sec">
+      <div>
+        <label class="slbl">字号 <span id="szv"></span>px</label>
+        <input type="range" min="12" max="32" id="esz" oninput="upP()">
+      </div>
+      <div>
+        <label class="slbl">行距 <span id="lhv"></span>x</label>
+        <input type="range" min="1.2" max="3.0" step="0.1" id="elh" oninput="upP()">
+      </div>
+    </div>
+    <div class="sec">
+      <label class="slbl">对齐</label>
+      <div class="brow">
+        <button class="tbtn" id="al-left" onclick="setAl('left')">← 左</button>
+        <button class="tbtn" id="al-center" onclick="setAl('center')">居中</button>
+        <button class="tbtn" id="al-right" onclick="setAl('right')">右 →</button>
+      </div>
+    </div>
+    <div class="div"></div>
+    <div class="sec">
+      <label class="slbl">底纹</label>
+      <div class="brow" id="bgb"></div>
+    </div>
+    <div class="sec">
+      <label class="slbl">自定义背景图</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="tbtn" onclick="document.getElementById('bgi').click()">📷 选图片</button>
+        <button class="tbtn" id="clrbg" onclick="clearBg()" style="display:none;">✕ 清除</button>
+        <input id="bgi" type="file" accept="image/*" style="display:none" onchange="loadBg(this)">
+      </div>
+    </div>
+    <div class="sec">
+      <label class="slbl">卡片比例</label>
+      <div class="brow" id="ratb"></div>
+    </div>
+    <div class="div"></div>
+    <div class="sec">
+      <label class="slbl">角落文字</label>
+      <div class="trow">
+        <label class="sw"><input type="checkbox" id="tgd" onchange="upP()"><span class="sli"></span></label>
+        <span class="tlbl">显示日期</span>
+      </div>
+      <div class="trow">
+        <label class="sw"><input type="checkbox" id="tgc" onchange="upP()"><span class="sli"></span></label>
+        <span class="tlbl">自定义水印文字</span>
+      </div>
+      <div id="csec">
+        <label class="slbl" style="margin-top:6px;">预设</label>
+        <div class="preset-row">
+          <button class="pbtn" id="pre-Echo" onclick="setPre('Echo')">Echo</button>
+          <button class="pbtn" id="pre-Aria" onclick="setPre('Aria')">Aria</button>
+          <button class="pbtn" id="pre-Fox" onclick="setPre('Fox &amp; Goldfish')">Fox &amp; Goldfish</button>
+          <button class="pbtn" id="pre-custom" onclick="setPre('custom')">自定义</button>
+        </div>
+        <div id="corner-custom-inp" style="display:none;margin-bottom:8px;">
+          <input class="inp" type="text" id="ect" placeholder="输入任意文字…" oninput="upP()" style="height:36px;">
+        </div>
+        <label class="slbl">位置</label>
+        <div class="cgrid">
+          <button class="cpbtn" id="cp-tl" onclick="setCp('tl')">↖ 左上</button>
+          <button class="cpbtn" id="cp-tr" onclick="setCp('tr')">右上 ↗</button>
+          <button class="cpbtn" id="cp-bl" onclick="setCp('bl')">↙ 左下</button>
+          <button class="cpbtn" id="cp-br" onclick="setCp('br')">右下 ↘</button>
+        </div>
+      </div>
+    </div>
+    <div class="div"></div>
+    <div class="exrow">
+      <button class="btn-exi" onclick="expImg()">📷 导出图片</button>
+      <button class="btn-ext" onclick="expTxt()">📄 导出文字</button>
+    </div>
+    <div style="height:24px;"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════
+const MO=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+const WD=['日','一','二','三','四','五','六'];
+const FONTS=[
+  {l:'Playfair',  v:"'Playfair Display','Noto Serif SC',serif"},
+  {l:'手写体',    v:"'Caveat','Noto Serif SC',serif"},
+  {l:'打字机',    v:"'Special Elite','Noto Serif SC',serif"},
+  {l:'Cormorant', v:"'Cormorant Garamond','Noto Serif SC',serif"},
+  {l:'IM Fell',   v:"'IM Fell English','Noto Serif SC',serif"},
+  {l:'宋体',      v:"'Noto Serif SC',serif"},
+  {l:'文楷',      v:"'LXGW WenKai','Noto Serif SC',serif"},
+];
+const BGS=[
+  {l:'米白',id:'ivory',c:'#fdf8f0'},{l:'泛黄',id:'aged',c:'#f0e0c0'},
+  {l:'横线',id:'lined',c:'#fdf8f0'},{l:'方格',id:'grid',c:'#fdf8f0'},{l:'牛皮',id:'kraft',c:'#c8a060'},
+];
+const BTC={ivory:'#3a2a1a',aged:'#3a2a1a',lined:'#3a2a1a',grid:'#3a2a1a',kraft:'#2a1608'};
+const RATS=[
+  {l:'自由', id:'free', w:260,h:null},
+  {l:'3:4',  id:'r34',  w:240,h:320},
+  {l:'1:1',  id:'r11',  w:260,h:260},
+  {l:'4:3',  id:'r43',  w:300,h:225},
+  {l:'9:16', id:'r916', w:200,h:356},
+];
+const DEFAULT_CATS=['泡泡','47','漂流瓶','Saudade','锚点'];
+const CAT_COLORS={'泡泡':'#7a8ba0','47':'#8b7a4a','漂流瓶':'#4a7a8b','Saudade':'#7a4a8b','锚点':'#4a8b7a'};
+const PRESETS=['Echo','Aria','Fox & Goldfish'];
+const CAT_TAGLINES={
+  '全部':   'everything the tide brought back',
+  '⭐ 收藏': 'the ones I held a little tighter',
+  '泡泡':   '小鱼吐了一个泡泡。里面什么都有。',
+  '47':     '第四十七秒。你听到了吗。',
+  '漂流瓶': 'from someone, somewhere, sometime',
+  'Saudade':'thinking of you in a language that has no translation',
+  '锚点':   'this is where we stood still',
+};
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let entries=[], calY=new Date().getFullYear(), calM=new Date().getMonth();
+let selDay=td(), editId=null, viewEntryId=null;
+let _f="'Cormorant Garamond','Noto Serif SC',serif", _al='left', _bg='ivory';
+let _rat='free', _cp='br', _bgImg=null, _star=false, _cat='泡泡';
+let _preVal='Echo', _customCorner='';
+let customCats=[], _sbt='全部';
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function td(){return new Date().toISOString().slice(0,10);}
+function gid(){return Math.random().toString(36).slice(2,11);}
+function fd(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${y}年${Number(m)}月${Number(dd)}日`;}
+function allCats(){return[...DEFAULT_CATS,...customCats];}
+function catColor(c){return CAT_COLORS[c]||'#8b6b4a';}
+function defStyle(){return{fontFamily:"'Cormorant Garamond','Noto Serif SC',serif",fontSize:20,align:'left',lineHeight:2.0,bg:'ivory',bgImage:null,ratio:'free',showDate:true,showCorner:true,cornerPreset:'Echo',cornerCustom:'',cornerPos:'br'};}
+
+// ══════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════
+function sa(){try{localStorage.setItem('tn5',JSON.stringify(entries));}catch(e){}}
+function la(){
+  try{const s=localStorage.getItem('tn5')||localStorage.getItem('tn4')||localStorage.getItem('jnl3')||localStorage.getItem('journal-v1');if(s)entries=JSON.parse(s);}catch(e){}
+  try{const c=localStorage.getItem('tn-cats');if(c)customCats=JSON.parse(c);}catch(e){}
+}
+function saveCats(){try{localStorage.setItem('tn-cats',JSON.stringify(customCats));}catch(e){}}
+
+// Draft
+let _draftTimer=null;
+function autoSaveDraft(){
+  const badge=document.getElementById('draft-badge');
+  badge.style.display='block';
+  clearTimeout(_draftTimer);
+  _draftTimer=setTimeout(()=>{badge.style.display='none';},1500);
+  saveDraftStore();
+}
+function saveDraftStore(){
+  try{localStorage.setItem('tn-draft',JSON.stringify({id:editId,date:document.getElementById('ed').value,content:document.getElementById('ec').value,starred:_star,category:_cat}));}catch(e){}
+}
+function loadDraftStore(){try{const s=localStorage.getItem('tn-draft');return s?JSON.parse(s):null;}catch(e){return null;}}
+function clearDraft(){try{localStorage.removeItem('tn-draft');}catch(e){}}
+
+// ══════════════════════════════════════════
+//  VIEW SWITCHING
+// ══════════════════════════════════════════
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ══════════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════════
+function sbOpen(){
+  const ov=document.getElementById('sb-ov'),pn=document.getElementById('sb-pn');
+  ov.style.display='block';
+  requestAnimationFrame(()=>{ov.classList.add('vis');pn.classList.add('open');});
+  document.getElementById('sb-sq').value='';
+  renderSB();
+}
+function sbClose(e){
+  if(e&&document.getElementById('sb-pn').contains(e.target))return;
+  const ov=document.getElementById('sb-ov'),pn=document.getElementById('sb-pn');
+  ov.classList.remove('vis');pn.classList.remove('open');
+  setTimeout(()=>{ov.style.display='none';},260);
+}
+function renderSBSearch(){renderSBList();}
+function sbTagline(t){
+  const el=document.getElementById('sb-tagline');
+  const txt=CAT_TAGLINES[t]||(CAT_TAGLINES['全部']);
+  el.textContent=txt;
+}
+function renderSB(){
+  const tl=document.getElementById('sb-tabs');
+  const tabs=['全部','⭐ 收藏',...allCats()];
+  tl.innerHTML='';
+  tabs.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='sbtab'+(_sbt===t?' on':'');
+    b.textContent=t;
+    b.onclick=(e)=>{e.stopPropagation();_sbt=t;sbTagline(t);renderSBList();tl.querySelectorAll('.sbtab').forEach(x=>x.classList.remove('on'));b.classList.add('on');};
+    tl.appendChild(b);
+  });
+  sbTagline(_sbt);
+  renderSBList();
+}
+function renderSBList(){
+  const q=(document.getElementById('sb-sq')||{}).value?.trim()||'';
+  const ll=document.getElementById('sb-list');ll.innerHTML='';
+  let fl=[...entries].sort((a,b)=>b.date.localeCompare(a.date));
+  if(_sbt==='⭐ 收藏')fl=fl.filter(e=>e.starred);
+  else if(allCats().includes(_sbt))fl=fl.filter(e=>e.category===_sbt);
+  if(q)fl=fl.filter(e=>e.content.includes(q)||e.date.includes(q));
+  if(!fl.length){ll.innerHTML='<div style="text-align:center;padding:28px;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--mu);font-size:15px;">暂无内容</div>';return;}
+  fl.forEach(e=>{
+    const d=document.createElement('div');d.className='sb-e';
+    d.innerHTML=`<div class="sb-e-date">${fd(e.date)}</div>
+      <div class="sb-e-body" style="font-family:${e.style?.fontFamily||"'Lora',serif"}">${e.content||'（空）'}</div>
+      <div class="sb-e-ft">${e.category?`<span class="chip" style="color:${catColor(e.category)}">${e.category}</span>`:''}${e.starred?'<span style="font-size:11px;">⭐</span>':''}</div>`;
+    d.onclick=()=>{sbClose(null);openViewMode(e);};
+    ll.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════
+//  CALENDAR
+// ══════════════════════════════════════════
+function chM(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
+function renderCal(){
+  document.getElementById('cmth').textContent=`${calY}年 ${MO[calM]}`;
+  const g=document.getElementById('cg');g.innerHTML='';
+  WD.forEach(w=>{const c=document.createElement('div');c.className='calwd';c.textContent=w;g.appendChild(c);});
+  const f1=new Date(calY,calM,1).getDay(),dm=new Date(calY,calM+1,0).getDate(),today=td();
+  const edates=new Set(entries.map(e=>e.date));
+  for(let i=0;i<f1;i++)g.appendChild(document.createElement('div'));
+  for(let d=1;d<=dm;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const b=document.createElement('button');
+    b.className='calday'+(ds===today?' today':'')+(ds===selDay?' sel':'');
+    b.textContent=d;
+    if(edates.has(ds)){const dot=document.createElement('span');dot.className='caldot';b.appendChild(dot);}
+    b.onclick=()=>{selDay=ds;renderCal();renderDay();};
+    g.appendChild(b);
+  }
+  document.getElementById('ttl').textContent='· '+entries.length+' 篇';
+}
+function renderDay(){
+  const a=document.getElementById('ea');a.innerHTML='';
+  const de=entries.filter(e=>e.date===selDay);
+  const h=document.createElement('div');h.className='dayhdr';
+  h.innerHTML=`<div><div class="daytitle">${fd(selDay)}</div><div class="daysub">${de.length?de.length+' 篇':'今日留白'}</div></div>`;
+  const nb=document.createElement('button');nb.className='btn-new';nb.textContent='+ 新增';nb.onclick=newE;h.appendChild(nb);a.appendChild(h);
+  if(!de.length){a.innerHTML+=`<div class="empty"><div class="empty-ic">🌊</div><div class="empty-tx">今日留白，等待书写</div>`;}
+  else de.forEach(e=>a.appendChild(mkCard(e)));
+}
+function mkCard(e){
+  const bgC=e.style?.bgImage?'#ede0ca':({ivory:'#fdf8f0',aged:'#f0e0c0',lined:'#fdf8f0',grid:'#fdf8f0',kraft:'#c8a060'})[e.style?.bg||'ivory'];
+  const tc=BTC[e.style?.bg||'ivory']||'#3a2a1a';
+  const d=document.createElement('div');d.className='ecard';d.style.background=bgC;
+  d.innerHTML=`<div class="ecard-top"><div class="ecard-date" style="color:${tc}">${fd(e.date)}</div>
+    <div class="ecard-meta">${e.category?`<span class="chip" style="color:${catColor(e.category)}">${e.category}</span>`:''}${e.starred?'<span style="font-size:12px;">⭐</span>':''}</div></div>
+    <div class="ecard-body" style="font-family:${e.style?.fontFamily||"'Lora',serif"};color:${tc}">${e.content||'（空）'}</div>`;
+  d.onclick=()=>openViewMode(e);
+  return d;
+}
+
+// ══════════════════════════════════════════
+//  VIEW MODE
+// ══════════════════════════════════════════
+function openViewMode(e){
+  viewEntryId=e.id;
+  document.getElementById('vv-star').textContent=e.starred?'⭐':'☆';
+  // render card
+  const wrap=document.getElementById('vv-card');
+  wrap.innerHTML='';
+  const s=e.style||defStyle();
+  const rat=RATS.find(r=>r.id===s.ratio)||RATS[0];
+  const bgKey=s.bg||'ivory';
+  const tc=s.bgImage?'#fff':(BTC[bgKey]||'#3a2a1a');
+  const ts=s.bgImage?'0 1px 3px rgba(0,0,0,0.6)':'none';
+  // set dimensions
+  wrap.style.width=rat.w+'px';
+  if(rat.h){wrap.style.height=rat.h+'px';wrap.style.minHeight='';}
+  else{wrap.style.height='auto';wrap.style.minHeight='300px';}
+  wrap.style.padding='38px 34px 34px';
+  wrap.style.position='relative';
+  wrap.style.borderRadius='2px';
+  wrap.style.overflow='hidden';
+  // bg
+  if(s.bgImage){
+    wrap.style.backgroundImage=`url(${s.bgImage})`;
+    wrap.style.backgroundSize='cover';
+    wrap.style.backgroundPosition='center';
+    wrap.style.backgroundColor='';
+  } else {
+    wrap.style.backgroundImage='none';
+    wrap.style.backgroundColor='';
+    wrap.style.backgroundSize='';
+    wrap.style.backgroundPosition='';
+    // apply class after clearing style
+    wrap.className='';
+    wrap.classList.add('bg-'+bgKey);
+  }
+  // vignette
+  const vig=document.createElement('div');vig.className='rc-vig';wrap.appendChild(vig);
+  // date
+  if(s.showDate!==false){
+    const de=document.createElement('div');de.className='rc-date';
+    de.textContent=fd(e.date);
+    Object.assign(de.style,{color:tc,textShadow:ts,textAlign:s.align||'left'});
+    wrap.appendChild(de);
+  }
+  // body
+  const be=document.createElement('div');be.className='rc-body';
+  be.textContent=e.content||'';
+  Object.assign(be.style,{fontFamily:s.fontFamily,fontSize:(s.fontSize||20)+'px',lineHeight:s.lineHeight||2,textAlign:s.align||'left',color:tc,textShadow:ts});
+  wrap.appendChild(be);
+  // corner
+  const preV=s.cornerPreset||'Echo';
+  const ct=(s.showCorner!==false)?(preV==='custom'?s.cornerCustom:preV):'';
+  if(ct){
+    const ce=document.createElement('div');ce.className='rc-corner';
+    ce.textContent=ct;
+    Object.assign(ce.style,{color:tc,textShadow:ts});
+    const cpos={
+      tl:{top:'13px',left:'13px',bottom:'auto',right:'auto'},
+      tr:{top:'13px',right:'13px',bottom:'auto',left:'auto'},
+      bl:{bottom:'13px',left:'13px',top:'auto',right:'auto'},
+      br:{bottom:'13px',right:'13px',top:'auto',left:'auto'}
+    }[s.cornerPos||'br'];
+    Object.assign(ce.style,cpos);
+    wrap.appendChild(ce);
+  }
+  // blurred bg for vv view
+  const bgCol=s.bgImage?'#1a0e06':({ivory:'#c8b898',aged:'#b0905a',lined:'#c8b898',grid:'#c8b898',kraft:'#7a5030'})[bgKey]||'#2a1a0a';
+  document.getElementById('vv').style.background=bgCol;
+  showView('vv');
+}
+
+function togStarView(){
+  const e=entries.find(x=>x.id===viewEntryId);
+  if(!e)return;
+  e.starred=!e.starred;
+  document.getElementById('vv-star').textContent=e.starred?'⭐':'☆';
+  sa();
+}
+function vvEdit(){
+  const e=entries.find(x=>x.id===viewEntryId);
+  if(e)openE(e,false);
+}
+async function vvExport(){
+  try{
+    const c=document.getElementById('vv-card');
+    const cv=await html2canvas(c,{scale:4,backgroundColor:null,useCORS:true,logging:false,allowTaint:true});
+    const e=entries.find(x=>x.id===viewEntryId);
+    const a=document.createElement('a');
+    a.download=`tidal-${e?.date||td()}.png`;
+    a.href=cv.toDataURL('image/png');a.click();
+  }catch(err){alert('导出失败，请重试');}
+}
+
+// ══════════════════════════════════════════
+//  WRITE VIEW
+// ══════════════════════════════════════════
+function newE(){
+  const draft=loadDraftStore();
+  const e={id:gid(),date:selDay,content:'',starred:false,category:'泡泡',style:defStyle()};
+  if(draft&&draft.date===selDay&&!entries.find(x=>x.id===draft.id)){
+    e.id=draft.id;e.content=draft.content||'';e.starred=draft.starred||false;e.category=draft.category||'泡泡';
+  }
+  openE(e,true);
+}
+function autoSaveEntry(){
+  // Auto-save: persist entry to entries array whenever leaving write view
+  const content=document.getElementById('ec').value.trim();
+  const date=document.getElementById('ed').value;
+  if(!content&&!entries.find(e=>e.id===editId))return; // nothing to save for brand new empty entry
+  const existingStyle=(entries.find(e=>e.id===editId)||{}).style||defStyle();
+  const ent={
+    id:editId,date,content:document.getElementById('ec').value,
+    starred:_star,category:_cat,
+    style:{...existingStyle}
+  };
+  const i=entries.findIndex(e=>e.id===editId);
+  if(i>=0)entries[i]=ent;else if(content)entries.push(ent);
+  sa();clearDraft();
+}
+function writeBack(){autoSaveEntry();showView('vc');renderCal();renderDay();}
+function saveDraftAndBack(){autoSaveEntry();showView('vc');renderCal();renderDay();}
+
+function addCustomCat(){
+  const inp=document.getElementById('new-cat-inp');
+  const v=inp.value.trim();
+  if(!v)return;
+  if(allCats().includes(v)){alert('分类已存在');return;}
+  customCats.push(v);saveCats();_cat=v;inp.value='';
+  document.getElementById('custom-cat-sec').style.display='none';
+  bldCat();
+}
+function delCustomCat(cat){
+  customCats=customCats.filter(c=>c!==cat);
+  saveCats();
+  if(_cat===cat)_cat='泡泡';
+  bldCat();
+}
+function goLayout(){upP();showView('vl');}
+
+// ══════════════════════════════════════════
+//  OPEN ENTRY
+// ══════════════════════════════════════════
+function openE(e, isNew){
+  editId=e.id;
+  _f=e.style?.fontFamily||"'Cormorant Garamond','Noto Serif SC',serif";
+  _al=e.style?.align||'left';_bg=e.style?.bg||'ivory';_rat=e.style?.ratio||'free';
+  _cp=e.style?.cornerPos||'br';_bgImg=e.style?.bgImage||null;
+  _star=e.starred||false;_cat=e.category||'泡泡';
+  _preVal=e.style?.cornerPreset||'Echo';_customCorner=e.style?.cornerCustom||'';
+  document.getElementById('ec').value=e.content||'';
+  document.getElementById('ed').value=e.date;
+  document.getElementById('bst').textContent=_star?'⭐':'☆';
+  document.getElementById('bst2').textContent=_star?'⭐':'☆';
+  document.getElementById('draft-badge').style.display='none';
+  // show delete button only for saved entries
+  document.getElementById('wdel').style.display=(!isNew&&entries.find(x=>x.id===editId))?'inline-block':'none';
+  document.getElementById('esz').value=e.style?.fontSize||20;
+  document.getElementById('elh').value=e.style?.lineHeight||2.0;
+  document.getElementById('tgd').checked=e.style?.showDate!==false;
+  document.getElementById('tgc').checked=e.style?.showCorner!==false;
+  document.getElementById('clrbg').style.display=_bgImg?'inline-block':'none';
+  bldCat();bldFnt();bldBg();bldRat();upAl();upCp();syncPresetUI();upP();
+  showView('vw');
+}
+
+function togStar(){
+  _star=!_star;
+  document.getElementById('bst').textContent=_star?'⭐':'☆';
+  document.getElementById('bst2').textContent=_star?'⭐':'☆';
+}
+
+function delEntry(){showDelModal();}
+function showDelModal(){document.getElementById('del-modal').classList.add('show');}
+function hideDelModal(){document.getElementById('del-modal').classList.remove('show');}
+function confirmDel(){
+  hideDelModal();
+  entries=entries.filter(e=>e.id!==editId);
+  sa();clearDraft();
+  showView('vc');renderCal();renderDay();
+}
+
+// ══════════════════════════════════════════
+//  BUILD UI
+// ══════════════════════════════════════════
+function bldCat(){
+  const c=document.getElementById('catb');c.innerHTML='';
+  allCats().forEach(cat=>{
+    const wrap=document.createElement('div');wrap.className='cat-item';
+    const b=document.createElement('button');b.className='tbtn'+(_cat===cat?' on':'');
+    b.textContent=cat;
+    b.onclick=()=>{_cat=cat;document.getElementById('custom-cat-sec').style.display='none';bldCat();};
+    wrap.appendChild(b);
+    // show × only for custom cats
+    if(customCats.includes(cat)){
+      const x=document.createElement('button');x.className='cat-del';x.textContent='×';
+      x.title='删除分类';
+      x.onclick=(e)=>{e.stopPropagation();if(confirm(`删除分类"${cat}"？`))delCustomCat(cat);};
+      wrap.appendChild(x);
+    }
+    c.appendChild(wrap);
+  });
+  const add=document.createElement('button');add.className='tbtn';add.textContent='+ 自定义';
+  add.onclick=()=>{const s=document.getElementById('custom-cat-sec');s.style.display=s.style.display==='none'?'block':'none';};
+  c.appendChild(add);
+}
+function bldFnt(){
+  const f=document.getElementById('fntb');f.innerHTML='';
+  FONTS.forEach(fn=>{
+    const b=document.createElement('button');b.className='tbtn'+(_f===fn.v?' on':'');
+    b.style.fontFamily=fn.v;b.textContent=fn.l;
+    b.onclick=()=>{_f=fn.v;bldFnt();upP();};f.appendChild(b);
+  });
+}
+function bldBg(){
+  const b=document.getElementById('bgb');b.innerHTML='';
+  BGS.forEach(bg=>{
+    const btn=document.createElement('button');
+    btn.className='bgbtn'+(_bg===bg.id&&!_bgImg?' on':'');
+    btn.style.background=bg.c;btn.textContent=bg.l;
+    btn.onclick=()=>{_bg=bg.id;_bgImg=null;document.getElementById('clrbg').style.display='none';bldBg();upP();};
+    b.appendChild(btn);
+  });
+}
+function bldRat(){
+  const r=document.getElementById('ratb');r.innerHTML='';
+  RATS.forEach(rt=>{
+    const b=document.createElement('button');b.className='tbtn'+(_rat===rt.id?' on':'');
+    b.textContent=rt.l;b.onclick=()=>{_rat=rt.id;bldRat();upP();};r.appendChild(b);
+  });
+}
+function setAl(a){_al=a;upAl();upP();}
+function upAl(){['left','center','right'].forEach(a=>document.getElementById('al-'+a).classList.toggle('on',_al===a));}
+function setCp(p){_cp=p;upCp();upP();}
+function upCp(){['tl','tr','bl','br'].forEach(p=>document.getElementById('cp-'+p).classList.toggle('on',_cp===p));}
+function setPre(v){
+  _preVal=v;
+  document.getElementById('corner-custom-inp').style.display=(v==='custom')?'block':'none';
+  syncPresetUI();upP();
+}
+function syncPresetUI(){
+  [['Echo','Echo'],['Aria','Aria'],['Fox & Goldfish','Fox'],['custom','custom']].forEach(([v,key])=>{
+    const el=document.getElementById('pre-'+key);
+    if(el)el.classList.toggle('on',_preVal===v);
+  });
+  document.getElementById('corner-custom-inp').style.display=(_preVal==='custom')?'block':'none';
+  if(_preVal==='custom')document.getElementById('ect').value=_customCorner;
+}
+function cornerText(){
+  if(!document.getElementById('tgc').checked)return'';
+  if(_preVal==='custom')return document.getElementById('ect').value;
+  return _preVal;
+}
+function loadBg(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{_bgImg=ev.target.result;_bg='custom';bldBg();document.getElementById('clrbg').style.display='inline-block';upP();};
+  r.readAsDataURL(f);inp.value='';
+}
+function clearBg(){_bgImg=null;_bg='ivory';bldBg();document.getElementById('clrbg').style.display='none';upP();}
+
+// ══════════════════════════════════════════
+//  PREVIEW UPDATE — grid/lined bg fix
+// ══════════════════════════════════════════
+function upP(){
+  const fs=+document.getElementById('esz').value;
+  const lh=+document.getElementById('elh').value;
+  const sDate=document.getElementById('tgd').checked;
+  const ct=cornerText();
+  const rat=RATS.find(r=>r.id===_rat)||RATS[0];
+  document.getElementById('szv').textContent=fs;
+  document.getElementById('lhv').textContent=lh.toFixed(1);
+
+  const card=document.getElementById('pc');
+
+  // ── Reset ALL inline background properties first ──
+  card.style.backgroundImage='none';
+  card.style.backgroundColor='';
+  card.style.backgroundSize='';
+  card.style.backgroundPosition='';
+  // ── Remove all bg classes ──
+  card.classList.remove('bg-ivory','bg-aged','bg-lined','bg-grid','bg-kraft');
+
+  if(_bgImg){
+    // Custom image: set via inline style (overrides everything)
+    card.style.backgroundImage=`url(${_bgImg})`;
+    card.style.backgroundSize='cover';
+    card.style.backgroundPosition='center';
+    card.style.backgroundColor='';
+  } else {
+    // Texture class: add AFTER clearing inline styles so CSS class wins
+    card.classList.add('bg-'+_bg);
+  }
+
+  const tc=_bgImg?'#fff':BTC[_bg]||'#3a2a1a';
+  const ts=_bgImg?'0 1px 3px rgba(0,0,0,0.6)':'none';
+
+  card.style.width=rat.w+'px';
+  if(rat.h){card.style.height=rat.h+'px';card.style.minHeight='';}
+  else{card.style.height='auto';card.style.minHeight='300px';}
+  card.style.padding='38px 34px 34px';
+  card.style.position='relative';
+
+  const de=document.getElementById('pc-date');
+  de.style.display=sDate?'block':'none';
+  if(sDate){
+    de.textContent=fd(document.getElementById('ed').value||td());
+    Object.assign(de.style,{color:tc,textShadow:ts,textAlign:_al});
+  }
+
+  const be=document.getElementById('pc-body');
+  be.textContent=document.getElementById('ec').value||'';
+  Object.assign(be.style,{fontFamily:_f,fontSize:fs+'px',lineHeight:lh,textAlign:_al,color:tc,textShadow:ts});
+
+  const ce=document.getElementById('pc-corner');
+  if(ct){
+    ce.textContent=ct;ce.style.display='block';
+    Object.assign(ce.style,{color:tc,textShadow:ts});
+    const pos={
+      tl:{top:'13px',left:'13px',bottom:'auto',right:'auto',textAlign:'left'},
+      tr:{top:'13px',right:'13px',bottom:'auto',left:'auto',textAlign:'right'},
+      bl:{bottom:'13px',left:'13px',top:'auto',right:'auto',textAlign:'left'},
+      br:{bottom:'13px',right:'13px',top:'auto',left:'auto',textAlign:'right'}
+    }[_cp];
+    Object.assign(ce.style,pos);
+  } else {ce.style.display='none';}
+}
+
+// ══════════════════════════════════════════
+//  SAVE
+// ══════════════════════════════════════════
+function saveE(){
+  const sty={
+    fontFamily:_f,fontSize:+document.getElementById('esz').value,align:_al,
+    lineHeight:+document.getElementById('elh').value,bg:_bg,bgImage:_bgImg,ratio:_rat,
+    showDate:document.getElementById('tgd').checked,
+    showCorner:document.getElementById('tgc').checked,
+    cornerPreset:_preVal,
+    cornerCustom:_preVal==='custom'?document.getElementById('ect').value:'',
+    cornerPos:_cp
+  };
+  const ent={id:editId,date:document.getElementById('ed').value,content:document.getElementById('ec').value,starred:_star,category:_cat,style:sty};
+  const i=entries.findIndex(e=>e.id===editId);
+  if(i>=0)entries[i]=ent;else entries.push(ent);
+  sa();clearDraft();showView('vc');renderCal();renderDay();
+}
+
+// ══════════════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════════════
+async function expImg(){
+  try{
+    const c=document.getElementById('pc');
+    const cv=await html2canvas(c,{scale:4,backgroundColor:null,useCORS:true,logging:false,allowTaint:true});
+    const a=document.createElement('a');
+    a.download=`tidal-${document.getElementById('ed').value}.png`;
+    a.href=cv.toDataURL('image/png');a.click();
+  }catch(e){alert('导出失败，请重试');}
+}
+function expTxt(){
+  const dt=document.getElementById('ed').value,ct=document.getElementById('ec').value;
+  const b=new Blob([`${fd(dt)}\n\n${ct}`],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.download=`tidal-${dt}.txt`;a.href=URL.createObjectURL(b);a.click();
+}
+function doExport(){
+  const safe=entries.map(e=>({...e,style:{...e.style,bgImage:null}}));
+  const a=document.createElement('a');a.download=`tidal-backup-${td()}.json`;
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(safe,null,2)],{type:'application/json'}));a.click();
+}
+function doImport(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{const d=JSON.parse(ev.target.result);if(!Array.isArray(d))throw 0;
+      const m=Object.fromEntries(entries.map(e=>[e.id,e]));
+      d.forEach(e=>{m[e.id]=e;});entries=Object.values(m);
+      sa();renderCal();renderDay();alert(`已导入 ${d.length} 条 ✓`);
+    }catch(e){alert('文件格式有误');}
+  };r.readAsText(f);inp.value='';
+}
+
+// ══════════════════════════════════════════
+//  PWA — inline manifest + service worker
+// ══════════════════════════════════════════
+(function(){
+  // Inject manifest via blob URL
+  const manifest={
+    name:"Tidal Notes",short_name:"Tidal",
+    description:"潮汐笔记 · where the tide leaves its words",
+    start_url:".",display:"standalone",
+    background_color:"#f0e8d8",theme_color:"#6b4a2a",
+    icons:[
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23f0e8d8'/%3E%3Ctext x='50%25' y='58%25' font-size='300' text-anchor='middle' dominant-baseline='middle'%3E🌊%3C/text%3E%3C/svg%3E",
+       sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}
+    ]
+  };
+  try{
+    const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('link');
+    link.rel='manifest';link.href=url;
+    document.head.appendChild(link);
+  }catch(e){}
+
+  // Register minimal service worker (cache-first for offline)
+  if('serviceWorker' in navigator){
+    const swCode=`
+const CACHE='tidal-v1';
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['.']))));
+self.addEventListener('fetch',e=>{
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+    if(res.ok){const cl=res.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));}
+    return res;
+  }).catch(()=>caches.match('.'))));
+});`;
+    try{
+      const blob=new Blob([swCode],{type:'text/javascript'});
+      const url=URL.createObjectURL(blob);
+      navigator.serviceWorker.register(url,{scope:'./'}).catch(()=>{});
+    }catch(e){}
+  }
+})();
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+la();renderCal();renderDay();
+</script>
+</body>
+</html>
